@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iter — Revisão do Agente de IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --iter-dark: #0d1117;
+    --iter-mid: #1a2232;
+    --iter-card: #1e2a3a;
+    --iter-border: #2a3a50;
+    --iter-accent: #4f9de8;
+    --iter-gold: #c9a84c;
+    --iter-green: #3ecf8e;
+    --iter-red: #e85d5d;
+    --iter-muted: #8a9ab5;
+    --iter-text: #d4dce8;
+    --iter-bright: #f0f4fa;
+    font-size: 15px;
+  }
+
+  body {
+    background: var(--iter-dark);
+    color: var(--iter-text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--iter-mid);
+    border-bottom: 1px solid var(--iter-border);
+    padding: 2rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-brand { display: flex; align-items: center; gap: 1rem; }
+  .logo-circle {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #4f9de8, #c9a84c);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; color: #fff; font-weight: 400;
+  }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--iter-bright); }
+  .header-sub { font-size: 0.8rem; color: var(--iter-muted); margin-top: 2px; }
+  .header-badge {
+    background: rgba(79,157,232,0.15);
+    border: 1px solid rgba(79,157,232,0.3);
+    color: var(--iter-accent);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* NAV */
+  .nav {
+    background: var(--iter-mid);
+    border-bottom: 1px solid var(--iter-border);
+    padding: 0 2.5rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--iter-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+    transition: color 0.2s, border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-btn:hover { color: var(--iter-text); }
+  .nav-btn.active { color: var(--iter-accent); border-bottom-color: var(--iter-accent); }
+
+  /* CONTENT */
+  .content { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION TITLE */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1.75rem;
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    background: rgba(79,157,232,0.1);
+    border: 1px solid rgba(79,157,232,0.2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .section-title-text { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--iter-bright); }
+
+  /* CARDS */
+  .card {
+    background: var(--iter-card);
+    border: 1px solid var(--iter-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--iter-muted);
+    margin-bottom: 8px;
+  }
+  .card-value {
+    color: var(--iter-bright);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+  .card-value.large { font-size: 1.05rem; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media(max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* INFO ROW */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--iter-border);
+  }
+  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .info-key { font-size: 0.8rem; color: var(--iter-muted); white-space: nowrap; min-width: 160px; }
+  .info-val { font-size: 0.9rem; color: var(--iter-bright); text-align: right; }
+
+  /* TAGS */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .tag-blue { background: rgba(79,157,232,0.15); color: var(--iter-accent); border: 1px solid rgba(79,157,232,0.2); }
+  .tag-gold { background: rgba(201,168,76,0.15); color: var(--iter-gold); border: 1px solid rgba(201,168,76,0.2); }
+  .tag-green { background: rgba(62,207,142,0.15); color: var(--iter-green); border: 1px solid rgba(62,207,142,0.2); }
+  .tag-red { background: rgba(232,93,93,0.15); color: var(--iter-red); border: 1px solid rgba(232,93,93,0.2); }
+  .tag-gray { background: rgba(138,154,181,0.1); color: var(--iter-muted); border: 1px solid rgba(138,154,181,0.15); }
+
+  /* FLOW STEP */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .flow-step {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding-bottom: 20px;
+    position: relative;
+  }
+  .flow-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px; top: 32px;
+    width: 2px; bottom: 0;
+    background: var(--iter-border);
+  }
+  .flow-num {
+    width: 32px; height: 32px; min-width: 32px;
+    background: rgba(79,157,232,0.15);
+    border: 1px solid rgba(79,157,232,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: var(--iter-accent);
+    position: relative; z-index: 1;
+  }
+  .flow-body { flex: 1; }
+  .flow-title { font-size: 0.85rem; font-weight: 600; color: var(--iter-bright); margin-bottom: 4px; }
+  .flow-text { font-size: 0.82rem; color: var(--iter-text); line-height: 1.6; white-space: pre-wrap; }
+
+  /* OBJECTION */
+  .objection {
+    background: var(--iter-card);
+    border: 1px solid var(--iter-border);
+    border-left: 3px solid var(--iter-gold);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .obj-q { font-size: 0.85rem; font-weight: 600; color: var(--iter-gold); margin-bottom: 6px; }
+  .obj-a { font-size: 0.82rem; color: var(--iter-text); line-height: 1.65; white-space: pre-wrap; }
+
+  /* FAQ */
+  .faq {
+    background: var(--iter-card);
+    border: 1px solid var(--iter-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+  }
+  .faq-q { font-size: 0.88rem; font-weight: 600; color: var(--iter-bright); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .faq-arrow { color: var(--iter-muted); transition: transform 0.2s; font-size: 0.7rem; }
+  .faq.open .faq-arrow { transform: rotate(180deg); }
+  .faq-a { font-size: 0.82rem; color: var(--iter-text); line-height: 1.65; margin-top: 10px; border-top: 1px solid var(--iter-border); padding-top: 10px; display: none; white-space: pre-wrap; }
+  .faq.open .faq-a { display: block; }
+
+  /* BENEFIT */
+  .benefit {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--iter-border);
+  }
+  .benefit:last-child { border-bottom: none; }
+  .benefit-num { font-size: 0.7rem; font-weight: 700; color: var(--iter-accent); min-width: 18px; margin-top: 2px; }
+  .benefit-text { font-size: 0.85rem; color: var(--iter-text); line-height: 1.6; }
+
+  /* ALERT */
+  .alert {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: var(--iter-gold);
+    margin-bottom: 1rem;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+
+  /* PROFESSIONALS */
+  .prof-card {
+    background: var(--iter-card);
+    border: 1px solid var(--iter-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .prof-avatar {
+    width: 44px; height: 44px; min-width: 44px;
+    background: linear-gradient(135deg, rgba(79,157,232,0.3), rgba(201,168,76,0.3));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem; color: var(--iter-bright);
+  }
+  .prof-name { font-weight: 600; color: var(--iter-bright); font-size: 0.95rem; }
+  .prof-role { font-size: 0.78rem; color: var(--iter-muted); margin-top: 2px; }
+
+  /* HORÁRIOS */
+  .hours-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .hours-card {
+    background: var(--iter-card);
+    border: 1px solid var(--iter-border);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .hours-day { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--iter-muted); margin-bottom: 6px; }
+  .hours-time { font-size: 0.95rem; font-weight: 600; color: var(--iter-bright); }
+  .hours-closed { color: var(--iter-red); font-size: 0.85rem; }
+
+  /* SEPARATOR */
+  .sep { height: 1px; background: var(--iter-border); margin: 1.5rem 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="logo-circle">I</div>
+    <div>
+      <div class="header-title">Iter Eficiência Financeira</div>
+      <div class="header-sub">Revisão completa do cadastro do agente de IA</div>
+    </div>
+  </div>
+  <div class="header-badge">Configuração do Agente</div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('empresa', this)">Empresa</button>
+  <button class="nav-btn" onclick="show('servico', this)">Serviço</button>
+  <button class="nav-btn" onclick="show('qualificacao', this)">Qualificação</button>
+  <button class="nav-btn" onclick="show('objecoes', this)">Objeções</button>
+  <button class="nav-btn" onclick="show('faqs', this)">FAQs</button>
+  <button class="nav-btn" onclick="show('agente', this)">Agente</button>
+  <button class="nav-btn" onclick="show('horarios', this)">Horários</button>
+</nav>
+
+<div class="content">
+
+  <!-- EMPRESA -->
+  <div class="section active" id="empresa">
+    <div class="section-header">
+      <div class="section-icon">🏢</div>
+      <div class="section-title-text">Dados da Empresa</div>
+    </div>
+
+    <div class="card">
+      <div class="info-row"><span class="info-key">Nome</span><span class="info-val">Iter Eficiência Financeira</span></div>
+      <div class="info-row"><span class="info-key">Responsáveis</span><span class="info-val">Larissa Bastos e Thaiane Oliveira</span></div>
+      <div class="info-row"><span class="info-key">E-mail</span><span class="info-val">iter@itergrupo.net</span></div>
+      <div class="info-row"><span class="info-key">Telefone</span><span class="info-val">(38) 99947-8257</span></div>
+      <div class="info-row"><span class="info-key">Site</span><span class="info-val">www.itergrupo.net</span></div>
+      <div class="info-row"><span class="info-key">Instagram</span><span class="info-val">@itergrupo</span></div>
+      <div class="info-row"><span class="info-key">Endereço</span><span class="info-val">Online — Rio de Janeiro / RJ</span></div>
+      <div class="info-row"><span class="info-key">Tempo de mercado</span><span class="info-val">Mais de 10 anos</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Missão</div>
+      <div class="card-value">A missão da ITER é capacitar nossos clientes a alcançar a independência financeira por meio de orientação estratégica e especializada em todas as etapas de sua jornada. Trabalhamos com soluções financeiras personalizadas e total transparência, ajudando cada cliente a tomar decisões bem informadas, proteger seu patrimônio e construir um caminho sólido para alcançar seus objetivos financeiros.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Visão</div>
+      <div class="card-value">Nossa visão é ser reconhecida como a principal referência em gestão financeira e consultoria no mercado, ajudando pessoas e famílias a construir, proteger e perpetuar seu patrimônio com estratégia, transparência e visão de longo prazo. Buscamos transformar a forma como nossos clientes se relacionam com o dinheiro, oferecendo clareza, segurança e confiança para que tomem decisões financeiras mais conscientes em todas as etapas da vida.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Diferenciais</div>
+      <div class="tags">
+        <span class="tag tag-blue">Personalização real</span>
+        <span class="tag tag-blue">Visão completa (não só investimento)</span>
+        <span class="tag tag-blue">Acompanhamento contínuo</span>
+        <span class="tag tag-blue">Clareza / educação</span>
+        <span class="tag tag-blue">Proteção antes de crescimento</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Descrição Detalhada</div>
+      <div class="card-value">Há mais de 10 anos, nossa consultoria se dedica a oferecer soluções completas e integradas para ajudar você a alcançar seus objetivos financeiros com segurança e clareza.
+
+Acreditamos que uma gestão financeira sólida começa com organização e visão estratégica. Por isso, estruturamos nosso trabalho a partir do fluxo de caixa, que funciona como a base para integrar todas as áreas do planejamento financeiro. A partir dele, conectamos a definição de metas e prioridades, a gestão de riscos, a otimização de ativos, além do planejamento tributário e sucessório, garantindo uma visão completa e alinhada à sua realidade.
+
+Nosso papel é transformar informações financeiras em estratégia, criando um plano personalizado que evolui junto com suas necessidades e objetivos ao longo do tempo.
+
+Nosso nome, Iter, que significa "rota" em latim, reflete exatamente essa missão: ser o seu guia ao longo da jornada financeira.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Profissionais</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div class="prof-card">
+          <div class="prof-avatar">L</div>
+          <div>
+            <div class="prof-name">Larissa Bastos</div>
+            <div class="prof-role">Sócia · Engenheira de Produção · 10 anos de experiência</div>
+          </div>
+        </div>
+        <div class="prof-card">
+          <div class="prof-avatar">T</div>
+          <div>
+            <div class="prof-name">Thaiane Oliveira</div>
+            <div class="prof-role">Sócia · Engenheira Química · 10 anos de experiência</div>
+          </div>
+        </div>
+      </div>
+      <div class="alert" style="margin-top:12px; margin-bottom:0;">
+        ⚠️ Observação registrada: "Não queremos focar nos profissionais." — o agente não vai destacar os nomes das sócias.
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVIÇO -->
+  <div class="section" id="servico">
+    <div class="section-header">
+      <div class="section-icon">💼</div>
+      <div class="section-title-text">Serviço Cadastrado</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Nome do Serviço</div>
+      <div class="card-value large" style="color:var(--iter-accent); font-weight:600;">Consultoria Financeira</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Descrição do Serviço</div>
+      <div class="card-value">A Consultoria Financeira da ITER é um serviço completo e personalizado, desenvolvido para integrar todas as áreas da vida financeira de nossos clientes. A partir de uma análise detalhada da situação atual, estruturamos um planejamento estratégico que conecta organização do fluxo de caixa, proteção patrimonial, investimentos, gestão de riscos, planejamento tributário e sucessório.
+
+Mais do que recomendações pontuais, atuamos como parceiros na construção de um plano financeiro sólido, acompanhando sua evolução ao longo do tempo e adaptando as estratégias às diferentes fases da vida.
+
+Como diferencial tecnológico, a ITER oferece acesso a um aplicativo exclusivo com inteligência artificial, com integração ao WhatsApp.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Para quem é indicado</div>
+      <div class="card-value">Médicos que já ganham bem — normalmente acima de R$30 mil por mês — mas sentem que o dinheiro não se traduz em liberdade.
+
+Que vivem uma ou mais dessas situações:
+• O dinheiro entra… mas não sabem exatamente pra onde vai
+• Dependem de plantões pra sustentar o padrão de vida
+• Não têm clareza de quanto precisam para parar de trabalhar
+• Já tentaram se organizar, mas nunca conseguiram manter consistência
+• Sentem que estão trabalhando muito… e construindo menos do que deveriam</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">10 Benefícios que o cliente compra</div>
+      <div>
+        <div class="benefit"><span class="benefit-num">1</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Clareza total do dinheiro</strong> — saber exatamente quanto entra, quanto sobra e pra onde vai cada real. Sem achismo.</span></div>
+        <div class="benefit"><span class="benefit-num">2</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Fim dos vazamentos invisíveis</strong> — parar de perder dinheiro com gastos desalinhados, padrão de vida inflado, decisões mal estruturadas.</span></div>
+        <div class="benefit"><span class="benefit-num">3</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Independência de plantões por necessidade</strong> — deixar de trabalhar para fechar o mês e começar a trabalhar por escolha.</span></div>
+        <div class="benefit"><span class="benefit-num">4</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Estrutura financeira sólida</strong> — sistema simples de gestão, reserva de segurança, proteção.</span></div>
+        <div class="benefit"><span class="benefit-num">5</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Construção real de patrimônio</strong> — renda vira patrimônio, esforço vira resultado.</span></div>
+        <div class="benefit"><span class="benefit-num">6</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Redução da ansiedade financeira</strong> — sair do modo "apagar incêndio", tranquilidade mental.</span></div>
+        <div class="benefit"><span class="benefit-num">7</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Clareza do "número da liberdade"</strong> — saber quanto precisa para parar de depender de plantões e qual o caminho até lá.</span></div>
+        <div class="benefit"><span class="benefit-num">8</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Mais tempo e qualidade de vida</strong> — menos decisões impulsivas, menos sobrecarga, mais vida fora da medicina.</span></div>
+        <div class="benefit"><span class="benefit-num">9</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Sensação de progresso real</strong> — deixar de trabalhar muito e sentir que não sai do lugar.</span></div>
+        <div class="benefit"><span class="benefit-num">10</span><span class="benefit-text"><strong style="color:var(--iter-bright)">Liberdade financeira em construção</strong> — um caminho estruturado, previsível e possível.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Política de Preços</div>
+      <div class="card-value">Não trabalhamos com valores expostos diretamente porque cada caso possui uma realidade financeira diferente. A consultoria não é um produto genérico — é um processo estratégico e personalizado.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Informações Técnicas cadastradas</div>
+      <div class="card-value">• Método criado exclusivamente para médicos — não é educação financeira genérica
+• Mais de 10 anos de experiência lidando com a realidade financeira da profissão
+• Processo estruturado como um protocolo médico (diagnóstico → tratamento → alta)
+• Foco completo: organização, proteção e crescimento (não só investimento)
+• Acompanhamento próximo — você não fica sozinho tentando aplicar
+• Clareza prática: você entende exatamente o que fazer, sem complicação
+• Aplicação na vida real — adaptado à rotina e renda médica</div>
+    </div>
+  </div>
+
+  <!-- QUALIFICAÇÃO -->
+  <div class="section" id="qualificacao">
+    <div class="section-header">
+      <div class="section-icon">🎯</div>
+      <div class="section-title-text">Qualificação de Leads</div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:1rem;">
+      <div class="card">
+        <div class="card-label">Perfil Ideal</div>
+        <div class="card-value">Médicos de 25 a 60 anos</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Critério de Descarte</div>
+        <div class="card-value" style="color:var(--iter-red)">Não médicos com renda abaixo de R$15.000/mês</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Fluxo de Qualificação</div>
+      <div class="flow" style="margin-top:12px;">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-body">
+            <div class="flow-title">Abertura</div>
+            <div class="flow-text">Olá, seja bem-vindo(a) à ITER.
+Pra te ajudar da melhor forma possível, eu preciso entender rapidamente o seu momento.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-body">
+            <div class="flow-title">Pergunta 1 — É médico?</div>
+            <div class="flow-text">Botões: Sim / Não</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3A</div>
+          <div class="flow-body">
+            <div class="flow-title">Se MÉDICO → Faixa de renda</div>
+            <div class="flow-text">Opções: Até R$15k · R$15k–R$25k · R$25k–R$30k · Acima de R$30k
+→ Acima de R$30k passa direto para agendamento</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3B</div>
+          <div class="flow-body">
+            <div class="flow-title">Se NÃO MÉDICO → Profissão + Renda</div>
+            <div class="flow-text">Profissão: Empresário / Profissional de saúde / Outras
+Renda: Até R$5k · R$5k–R$10k · R$10k–R$15k · Acima de R$15k
+→ Acima de R$15k segue; abaixo → descarte educado</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">4</div>
+          <div class="flow-body">
+            <div class="flow-title">Qualificado → Agendamento de call</div>
+            <div class="flow-text">Call de vídeo, 20 minutos.
+Pergunta período (Manhã / Tarde / Noite) e dia da semana (Seg–Sex).
+Envia confirmação com horário + link.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">5</div>
+          <div class="flow-body">
+            <div class="flow-title">Pré-enquadramento (logo após o link)</div>
+            <div class="flow-text">Isso não é uma aula e nem uma consultoria genérica. É uma conversa estratégica onde a gente vai entender seu cenário e te mostrar, com clareza, o que está travando sua evolução financeira.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">6</div>
+          <div class="flow-body">
+            <div class="flow-title">Lembrete (1–2h antes)</div>
+            <div class="flow-text">Passando pra te lembrar da nossa conversa hoje. [Data e horário]. O link é o mesmo que te enviei anteriormente.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">7</div>
+          <div class="flow-body">
+            <div class="flow-title">No-show + Follow-ups (3 tentativas)</div>
+            <div class="flow-text">Follow-up 1: Pergunta se quer remarcar
+Follow-up 2 (48h): Mensagem com dor — "A maioria dos médicos que conversa com a gente está ganhando bem… mas continua presa no mesmo ciclo."
+Follow-up 3: Encerramento com escassez leve</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJEÇÕES -->
+  <div class="section" id="objecoes">
+    <div class="section-header">
+      <div class="section-icon">💬</div>
+      <div class="section-title-text">Objeções e Respostas</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Tenho medo de descobrir que minha situação financeira está pior do que imagino</div>
+      <div class="obj-a">Isso é mais comum do que parece — evitar olhar não resolve, só prolonga o problema. Quando você enxerga com clareza, você para de viver no escuro e começa a ter controle. A maioria dos médicos sente alívio já nas primeiras semanas, porque finalmente entende o que está acontecendo.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Não tenho tempo pra organizar minha vida financeira</div>
+      <div class="obj-a">A falta de tempo geralmente é consequência da desorganização. O método foi criado justamente para médicos com rotina intensa — é simples, direto e aplicável.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Já ganho bem, acho que não preciso disso</div>
+      <div class="obj-a">Se só ganhar bem resolvesse, você já teria liberdade financeira. O problema não é quanto entra, é a falta de estrutura. Sem isso, a renda só aumenta o padrão de vida, não o patrimônio.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">É caro</div>
+      <div class="obj-a">Caro é continuar perdendo dinheiro todos os meses sem perceber. Quando você corrige vazamentos e organiza sua estrutura, o investimento tende a se pagar rapidamente e continua gerando resultado para sempre.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Posso aprender isso sozinho</div>
+      <div class="obj-a">Informação nunca faltou — o que falta é método, direção e aplicação na sua realidade. Aqui você encurta anos de tentativa e erro em poucos meses.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Tenho medo de não conseguir manter depois</div>
+      <div class="obj-a">Você não depende de motivação, e sim de um sistema simples e replicável. A mentoria é estruturada para que isso vire parte da sua rotina, sem esforço excessivo.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Minha renda é variável, isso não funciona pra mim</div>
+      <div class="obj-a">Funciona justamente por isso. A estrutura foi pensada principalmente para médicos com múltiplas fontes de renda e variação mensal, trazendo previsibilidade mesmo nesse cenário.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Já tentei me organizar antes e não consegui</div>
+      <div class="obj-a">O problema nunca foi falta de tentativa — foi falta de método. Quando existe um processo estruturado e acompanhamento, a chance de consistência muda completamente.</div>
+    </div>
+    <div class="objection">
+      <div class="obj-q">Não sei se agora é o momento</div>
+      <div class="obj-a">O problema não espera o momento ideal. Quanto mais você adia, mais caro ele fica: em dinheiro, tempo e desgaste. Resolver agora é sempre mais simples do que depois.</div>
+    </div>
+  </div>
+
+  <!-- FAQs -->
+  <div class="section" id="faqs">
+    <div class="section-header">
+      <div class="section-icon">❓</div>
+      <div class="section-title-text">Perguntas Frequentes</div>
+    </div>
+    <div id="faq-list"></div>
+  </div>
+
+  <!-- AGENTE -->
+  <div class="section" id="agente">
+    <div class="section-header">
+      <div class="section-icon">🤖</div>
+      <div class="section-title-text">Configuração do Agente</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Personalidade</div>
+      <div class="tags">
+        <span class="tag tag-blue">Consultivo</span>
+        <span class="tag tag-blue">Direto</span>
+        <span class="tag tag-blue">Cuidadoso</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Tom de Comunicação</div>
+        <div class="card-value">Balanceado</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Nível de Formalidade</div>
+        <div class="card-value">3 / 5 (intermediário)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Tratamento</div>
+        <div class="card-value">Você (respeitoso)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Idioma</div>
+        <div class="card-value">Português</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Palavras para EVITAR</div>
+      <div class="tags">
+        <span class="tag tag-red">dicas</span>
+        <span class="tag tag-red">jeitinho</span>
+        <span class="tag tag-red">dinheiro fácil</span>
+        <span class="tag tag-red">enriquecer rápido</span>
+        <span class="tag tag-red">controle de gastos</span>
+        <span class="tag tag-red">planilhinha</span>
+        <span class="tag tag-red">economizar</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Palavras PREFERIDAS</div>
+      <div class="tags">
+        <span class="tag tag-green">estrutura financeira</span>
+        <span class="tag tag-green">clareza</span>
+        <span class="tag tag-green">controle</span>
+        <span class="tag tag-green">previsibilidade</span>
+        <span class="tag tag-green">estratégia</span>
+        <span class="tag tag-green">patrimônio</span>
+        <span class="tag tag-green">liberdade financeira</span>
+        <span class="tag tag-green">organização inteligente</span>
+        <span class="tag tag-green">método</span>
+        <span class="tag tag-green">decisão</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Gatilhos de Escalonamento (passa para humano)</div>
+      <div class="tags" style="margin-top:4px;">
+        <span class="tag tag-gold">Sentimento negativo</span>
+        <span class="tag tag-gold">Dúvida técnica</span>
+        <span class="tag tag-gold">Pergunta específica de preço</span>
+        <span class="tag tag-gold">Solicitação de humano</span>
+      </div>
+      <div style="margin-top:10px; font-size:0.8rem; color:var(--iter-muted);">Limite: 2 mensagens antes de escalonar · Limite geral de contato: 3 tentativas</div>
+    </div>
+  </div>
+
+  <!-- HORÁRIOS -->
+  <div class="section" id="horarios">
+    <div class="section-header">
+      <div class="section-icon">🕐</div>
+      <div class="section-title-text">Horários de Funcionamento</div>
+    </div>
+
+    <div class="hours-grid">
+      <div class="hours-card">
+        <div class="hours-day">Segunda a Sexta</div>
+        <div class="hours-time">09:00 – 18:00</div>
+      </div>
+      <div class="hours-card">
+        <div class="hours-day">Sábado</div>
+        <div class="hours-time hours-closed">Fechado</div>
+      </div>
+      <div class="hours-card">
+        <div class="hours-day">Domingo</div>
+        <div class="hours-time hours-closed">Fechado</div>
+      </div>
+      <div class="hours-card">
+        <div class="hours-day">Feriados</div>
+        <div class="hours-time hours-closed">Fechado</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Agente ativo</div>
+        <div class="card-value">No horário da empresa (09h–18h)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Duração da avaliação</div>
+        <div class="card-value">60 minutos</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Antecedência mínima</div>
+        <div class="card-value">1 dia</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Agendamento direto</div>
+        <div class="card-value" style="color:var(--iter-green)">Habilitado para Consultoria Financeira</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Build FAQs
+  const faqs = [
+    { q: "Funciona para recém-formados?", a: "Sim, inclusive, quanto antes você estrutura sua vida financeira, mais rápido você constrói patrimônio e evita erros que podem custar anos da sua carreira." },
+    { q: "Preciso entender de investimentos?", a: "Não. A mentoria foi criada para simplificar sua vida financeira. Você não precisa virar especialista, você precisa de direção." },
+    { q: "Isso toma muito tempo?", a: "Não. O método foi desenhado para médicos com agenda cheia. É direto, prático e focado no que realmente gera resultado." },
+    { q: "Funciona mesmo para quem já ganha bem?", a: "Principalmente para quem ganha bem. Porque o problema não é renda, é estrutura." },
+    { q: "Isso serve para quem trabalha como PJ?", a: "Sim, e você ainda recebe uma análise específica de enquadramento da sua PJ para otimizar sua estrutura." },
+    { q: "Vou precisar mudar muito meu padrão de vida?", a: "Não, você vai viver com mais controle e intenção." },
+    { q: "E se eu não gostar ou não fizer sentido?", a: "Você tem 7 dias de garantia incondicional. Sem perguntas. Sem risco." },
+    { q: "Qual a diferença disso para conteúdos gratuitos ou planilhas?", a: "Conteúdo gratuito traz informação e planilhas ajudam na organização, mas o que realmente faz diferença é a aplicação com método.\n\nMuitos médicos já tiveram acesso a informações financeiras, mas ainda assim não conseguiram transformar isso em controle real.\n\nPorque o desafio não é saber o que fazer, é saber como aplicar, na prática, com consistência." },
+    { q: "Em quanto tempo começo a ver resultado?", a: "Muitos alunos já percebem clareza e controle nas primeiras semanas. Mas o processo completo acontece ao longo dos 90 dias." },
+    { q: "Isso realmente pode me ajudar a reduzir plantões?", a: "Sim, porque o objetivo é estruturar sua renda para gerar liberdade." }
+  ];
+
+  const list = document.getElementById('faq-list');
+  faqs.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'faq';
+    el.innerHTML = `<div class="faq-q">${f.q} <span class="faq-arrow">▼</span></div><div class="faq-a">${f.a}</div>`;
+    el.onclick = () => el.classList.toggle('open');
+    list.appendChild(el);
+  });
+</script>
+</body>
+</html>
